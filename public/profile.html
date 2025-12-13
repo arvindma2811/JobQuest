@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Your Profile | JobQuest</title>
+  <link rel="stylesheet" href="css/styles.css" />
+</head>
+<body>
+
+  <!-- ✅ Navbar (fixed and styled) -->
+  <header class="navbar">
+    <div class="logo">
+      <img src="images/logo.png" alt="JobQuest Logo" />
+      <h2>JobQuest</h2>
+    </div>
+    <ul class="nav-links">
+      <li><a href="index.html">Home</a></li>
+      <li><a href="about.html">About</a></li>
+      <li><a href="contact.html">Contact</a></li>
+      <li class="dropdown profile">
+        <a href="profile.html">
+          <img id="navProfilePic" class="profile-pic" src="images/default-avatar.png" alt="Profile">
+          <span id="navUsername" class="profile-text">User</span>
+        </a>
+        <ul class="dropdown-content">
+          <li><a href="profile.html">View Profile</a></li>
+          <li><a href="#" id="logoutLink">Logout</a></li>
+        </ul>
+      </li>
+    </ul>
+  </header>
+
+  <!-- ✅ Profile Section -->
+  <section class="profile-page">
+    <div class="profile-container">
+      <h1>Your Profile</h1>
+      <div class="profile-card">
+        <img id="profile-pic" src="images/default-avatar.png" alt="Profile Picture" />
+        <h2 id="profile-name">Loading...</h2>
+        <p><strong>Username:</strong> <span id="profile-username">Loading...</span></p>
+        <p><strong>Email:</strong> <span id="profile-email">Fetching user info...</span></p>
+        <button id="logoutBtn">Logout</button>
+      </div>
+    </div>
+  </section>
+
+  <script>
+  // === Fetch logged-in user data ===
+  fetch('/profile')
+    .then(res => {
+      if (!res.ok) throw new Error('Not logged in');
+      return res.json();
+    })
+    .then(user => {
+      // Profile section
+      document.getElementById('profile-name').textContent = user.username;
+      document.getElementById('profile-username').textContent = user.username;
+      document.getElementById('profile-email').textContent = user.email;
+      document.getElementById('profile-pic').src = user.profile_pic || 'images/default-avatar.png';
+      // Navbar section
+      document.getElementById('navUsername').textContent = user.username;
+      document.getElementById('navProfilePic').src = user.profile_pic || 'images/default-avatar.png';
+    })
+    .catch(() => {
+      window.location.href = 'login.html';
+    });
+
+  // === Logout function ===
+  const logout = () => {
+    fetch('/logout').then(() => {
+      window.location.href = 'login.html';
+    });
+  };
+  document.getElementById('logoutBtn').addEventListener('click', logout);
+  document.getElementById('logoutLink').addEventListener('click', logout);
+</script>
+
+</body>
+</html>

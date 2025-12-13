@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+
+<html>
+    <head>
+        <title>Videos</title>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0"> 
+        <link rel="stylesheet" type="text/css" href="css/styles.css">
+        <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' fill='%237F00FF'/%3E%3Ctext x='50' y='65' font-size='50' text-anchor='middle' fill='white'%3E⚙%3C/text%3E%3C/svg%3E">
+        <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+        <script src="auth.js" defer></script>
+    </head>
+    <script>
+      // === Fetch logged-in user info for navbar ===
+  fetch('/profile')
+    .then(res => {
+      if (!res.ok) throw new Error('Not logged in');
+      return res.json();
+    })
+    .then(user => {
+      const navName = document.querySelector('.profile-text');
+      const navPic = document.querySelector('.profile-pic');
+      if (navName) navName.textContent = user.username;
+      if (navPic) navPic.src = user.profile_pic || 'images/default-avatar.png';
+    })
+    .catch(() => {
+      window.location.href = 'login.html';
+    });
+
+  // === Logout function ===
+  function logout() {
+    fetch('/logout').then(() => {
+      window.location.href = 'login.html';
+    });
+  }
+</script>
+
+
+    <body>
+        <nav class="navbar">
+            <div class="logo">
+                <img src="images/logo.png" alt="Logo">
+            </div>
+            <ul class="nav-links">
+                <li><a href="index.html">Home</a></li>
+                <li class="dropdown">
+                    <a href="#services">Services</a>
+                    <ul class="dropdown-content">
+                        <li><a href="video.html">Videos</a></li>
+                        <li><a href="tests.html">Tests</a></li>
+                    </ul>
+                </li>
+                <li><a href="analysis.html">Analysis</a></li>
+                <li><a href="about.html">About</a></li>
+                <li><a href="contact.html">Contact</a></li>
+                <li class="profile dropdown">
+                    <a href="#profile">
+                        <img class="profile-pic" src="images/Pfp.jpeg" alt="Profile picture">
+                        <span class="profile-text">Profile</span>
+                    </a>
+                    <ul class="dropdown-content">
+                        <li><a href="profile.html">View Profile</a></li>
+                        <li><a href="#" onclick="logout()">Logout</a></li>
+                    </ul>
+                </li>
+
+            </ul>
+        </nav>
+
+        <main class="main-content">
+            <h1>Available Videos</h1>
+            <div class="accordion">
+                <div class="acc-item">
+                  <button class="acc-btn">1. Behavioural Interview Questions</button>
+                  <div class="acc-content">
+                 <iframe width="560" height="315" src="https://www.youtube.com/embed/2uM7gYuOvr4?si=4CtNHzbBg3iXLTQr" allowfullscreen></iframe>
+                  </div>
+                </div>
+
+              <div class="acc-item">
+                <button class="acc-btn">2. Top 20 HR Questions</button>
+                  <div class="acc-content">
+                    <iframe width="560" height="315" src="https://www.youtube.com/embed/BoZpcibb-JI?si=Zxy0den3Y2eZXaOc" allowfullscreen></iframe>
+                  </div>
+              </div>
+
+              <div class="acc-item">
+                <button class="acc-btn">3. Top 7 Behavioural Interview Questions</button>
+                  <div class="acc-content">
+                    <iframe width="560" height="315" src="https://www.youtube.com/embed/0Qu7KKv64zM?si=0ajBgT-io5uEO1Fi"  allowfullscreen></iframe>
+                  </div>
+              </div>
+
+              <div class="acc-item">
+                <button class="acc-btn">4. How to Introduce Yourself In an Interview</button>
+                <div class="acc-content">
+                  <iframe width="560" height="315" src="https://www.youtube.com/embed/wexzvClUcUk?si=yK0tNkDSoZiqriGC"  allowfullscreen></iframe>
+                </div>
+              </div>
+
+              <div class="acc-item">
+                <button class="acc-btn">5. What Are Your Strengths and Weaknessess</button>
+                  <div class="acc-content">
+                    <iframe width="560" height="315" src="https://www.youtube.com/embed/M5905oDA34c?si=XWjOUjiEIM3HfiPK"  allowfullscreen></iframe>
+                  </div>
+              </div>
+
+              <div class="acc-item">
+                <button class="acc-btn">6. S.T.A.R Interview Questions And Answers</button>
+                  <div class="acc-content">
+                    <iframe width="560" height="315" src="https://www.youtube.com/embed/uQEuo7woEEk?si=vHr_jFXspdrvAIq9"  allowfullscreen></iframe>
+                  </div>
+              </div>
+
+              <div class="acc-item">
+                <button class="acc-btn">7. 40 Most Asked HR Questions</button>
+                  <div class="acc-content">
+                    <iframe width="560" height="315" src="https://www.youtube.com/embed/zIm_k9j0C50?si=MoPF1rQ4N80lCAF5"   allowfullscreen></iframe>
+                  </div>
+              </div>
+
+              <div class="acc-item">
+                <button class="acc-btn">8. How To Answer Behavioural Questions</button>
+                  <div class="acc-content">
+                    <iframe width="560" height="315" src="https://www.youtube.com/embed/TT-n6Xo5XX4?si=uySl9YDngdpBSYaB"  allowfullscreen></iframe>
+                  </div>
+              </div>
+
+              <div class="acc-item">
+                <button class="acc-btn">9. Behavioural Questions Breakdown by Ex-Meta Senior Managers</button>
+                  <div class="acc-content">
+                    <iframe width="560" height="315" src="https://www.youtube.com/embed/CAda15Tawlg?si=_EwmqLzcwx8eFbrC"  allowfullscreen></iframe>
+                  </div>
+              </div>
+
+              <div class="acc-item">
+                <button class="acc-btn">10. Top 10 Engineering Behavioural Questions</button>
+                  <div class="acc-content">
+                    <iframe width="560" height="315" src="https://www.youtube.com/embed/T25I2FQ9Mok?si=dNeJXS0MbDHmaMqK"  allowfullscreen></iframe>
+                  </div>
+              </div>
+
+            </div>
+        </main>
+        <script>
+            const accButtons = document.querySelectorAll(".acc-btn");
+
+            accButtons.forEach(btn => {
+            btn.addEventListener("click", () => {
+            const content = btn.nextElementSibling;
+
+            if (content.style.maxHeight) {
+                content.style.maxHeight = null;
+            } else {
+                content.style.maxHeight = content.scrollHeight + "px";
+                  }
+               });
+            });
+          </script>
+    </body>
+
+</html>

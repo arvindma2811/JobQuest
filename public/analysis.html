@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+
+<html>
+    <head>
+        <title>Analysis</title>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0"> 
+        <link rel="stylesheet" type="text/css" href="css/styles.css">
+        <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' fill='%237F00FF'/%3E%3Ctext x='50' y='65' font-size='50' text-anchor='middle' fill='white'%3E⚙%3C/text%3E%3C/svg%3E">
+        <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+        <script src="auth.js" defer></script>
+    </head>
+    <script>
+      // === Fetch logged-in user info for navbar ===
+  fetch('/profile')
+    .then(res => {
+      if (!res.ok) throw new Error('Not logged in');
+      return res.json();
+    })
+    .then(user => {
+      const navName = document.querySelector('.profile-text');
+      const navPic = document.querySelector('.profile-pic');
+      if (navName) navName.textContent = user.username;
+      if (navPic) navPic.src = user.profile_pic || 'images/default-avatar.png';
+    })
+    .catch(() => {
+      window.location.href = 'login.html';
+    });
+
+  // === Logout function ===
+  function logout() {
+    fetch('/logout').then(() => {
+      window.location.href = 'login.html';
+    });
+  }
+</script>
+
+
+    <body>
+        <nav class="navbar">
+            <div class="logo">
+                <img src="images/logo.png" alt="Logo">
+            </div>
+            <ul class="nav-links">
+                <li><a href="index.html">Home</a></li>
+                <li class="dropdown">
+                    <a href="#services">Services</a>
+                    <ul class="dropdown-content">
+                        <li><a href="video.html">Videos</a></li>
+                        <li><a href="tests.html">Tests</a></li>
+                    </ul>
+                </li>
+                <li><a href="analysis.html">Analysis</a></li>
+                <li><a href="about.html">About</a></li>
+                <li><a href="contact.html">Contact</a></li>
+                <li class="profile dropdown">
+                    <a href="#profile">
+                        <img class="profile-pic" src="images/Pfp.jpeg" alt="Profile picture">
+                        <span class="profile-text">Profile</span>
+                    </a>
+                    <ul class="dropdown-content">
+                        <li><a href="profile.html">View Profile</a></li>
+                        <li><a href="#" onclick="logout()">Logout</a></li>
+                    </ul>
+                </li>
+
+            </ul>
+        </nav>
+
+        <main class="main-content">
+            <h1>Your Test Analysis</h1>
+            <p>Check Your Performance and Scores</p>
+            <div id="scoresContainer"></div>
+        </main>
+
+        <script>
+let currentUser = null;
+
+// Get current user and fetch scores
+fetch('/profile')
+  .then(res => {
+    if (!res.ok) throw new Error('Not logged in');
+    return res.json();
+  })
+  .then(user => {
+    currentUser = user;
+    return fetch(`/tests/user-scores/${user.id}`);
+  })
+  .then(res => {
+    if (!res.ok) throw new Error('Failed to fetch scores');
+    return res.json();
+  })
+  .then(scores => {
+    displayScores(scores);
+  })
+  .catch(err => {
+    console.error('Error loading scores:', err);
+    document.getElementById('scoresContainer').innerHTML = '<p style="color: white; text-align: center;">Failed to load your scores</p>';
+  });
+
+function displayScores(scores) {
+  const container = document.getElementById('scoresContainer');
+  
+  if (!scores || scores.length === 0) {
+    container.innerHTML = '<p style="color: white; text-align: center; padding: 2rem;">No completed tests yet. Start taking tests to see your scores!</p>';
+    return;
+  }
+
+  let html = '<div id="scoresList">';
+  
+  scores.forEach((score, index) => {
+    const percentage = parseFloat(score.score);
+    const scoreColor = percentage >= 80 ? '#4CAF50' : percentage >= 60 ? '#FFC107' : '#FF416C';
+    
+    // Create link to detailed results page
+    const resultsLink = `test_results.html?test_id=${score.test_id}&user_id=${currentUser.id}`;
+    
+    html += `
+      <div class="score-card" style="border-left-color: ${scoreColor}; cursor: pointer;" onclick="window.location.href='${resultsLink}'">
+        <div class="score-card-header">
+          <h2>${score.title}</h2>
+          <span class="score-badge" style="background: ${scoreColor};">${percentage.toFixed(1)}%</span>
+        </div>
+        
+        <div class="score-card-details">
+          <p class="score-description">${score.description || 'Test'}</p>
+          <p class="score-difficulty">Difficulty: <span>${score.difficulty}</span></p>
+          
+          <div class="score-stats">
+            <div class="stat">
+              <span class="stat-label">Correct Answers</span>
+              <span class="stat-value">${score.correct_answers}/${score.total_questions}</span>
+            </div>
+            <div class="stat">
+              <span class="stat-label">Score</span>
+              <span class="stat-value">${percentage.toFixed(1)}%</span>
+            </div>
+            <div class="stat">
+              <span class="stat-label">Completed</span>
+              <span class="stat-value">${new Date(score.completed_at).toLocaleDateString()}</span>
+            </div>
+          </div>
+
+          <div class="progress-bar">
+            <div class="progress-fill" style="width: ${percentage}%; background: ${scoreColor};"></div>
+          </div>
+          
+          <p style="color: #888; font-size: 0.9rem; margin-top: 1rem; text-align: center;">Click to view detailed results →</p>
+        </div>
+      </div>
+    `;
+  });
+
+  html += '</div>';
+  
+  // Add overall stats
+  const avgScore = (scores.reduce((sum, s) => sum + parseFloat(s.score), 0) / scores.length).toFixed(1);
+  const totalTests = scores.length;
+  
+  html += `
+    <div class="overall-stats">
+      <h3>Overall Performance</h3>
+      <div class="stats-grid">
+        <div class="stat-box">
+          <span class="stat-title">Tests Completed</span>
+          <span class="stat-number">${totalTests}</span>
+        </div>
+        <div class="stat-box">
+          <span class="stat-title">Average Score</span>
+          <span class="stat-number">${avgScore}%</span>
+        </div>
+        <div class="stat-box">
+          <span class="stat-title">Best Score</span>
+          <span class="stat-number">${Math.max(...scores.map(s => parseFloat(s.score))).toFixed(1)}%</span>
+        </div>
+      </div>
+    </div>
+  `;
+
+  container.innerHTML = html;
+}
+</script>
+    </body>
+
+</html>

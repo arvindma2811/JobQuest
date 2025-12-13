@@ -1,0 +1,580 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Test Results</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"> 
+    <link rel="stylesheet" type="text/css" href="css/styles.css">
+    <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' fill='%237F00FF'/%3E%3Ctext x='50' y='65' font-size='50' text-anchor='middle' fill='white'%3E⚙%3C/text%3E%3C/svg%3E">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <script src="auth.js" defer></script>
+    <style>
+        .results-wrapper {
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+
+        .back-button {
+            display: inline-block;
+            margin-bottom: 2rem;
+            padding: 0.9rem 2rem;
+            background: linear-gradient(135deg, #00D4FF, #7F00FF);
+            color: white;
+            text-decoration: none;
+            border-radius: 10px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(127, 0, 255, 0.3);
+        }
+
+        .back-button:hover {
+            transform: translateX(-4px);
+            box-shadow: 0 6px 20px rgba(127, 0, 255, 0.5);
+        }
+
+        .results-header {
+            background: rgba(255, 255, 255, 0.15);
+            backdrop-filter: blur(10px);
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            padding: 2.5rem;
+            border-radius: 16px;
+            margin-bottom: 2rem;
+            color: white;
+            text-align: center;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+        }
+
+        .results-header h1 {
+            font-size: 2.2rem;
+            margin-bottom: 2rem;
+            color: white;
+        }
+
+        .results-summary {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 1.5rem;
+        }
+
+        .summary-item {
+            background: rgba(255, 255, 255, 0.08);
+            padding: 1.5rem;
+            border-radius: 10px;
+            text-align: center;
+            border: 1px solid rgba(255, 255, 255, 0.15);
+        }
+
+        .summary-item-label {
+            font-size: 0.85rem;
+            opacity: 0.8;
+            margin-bottom: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            font-weight: 600;
+            color: rgba(255, 255, 255, 0.7);
+        }
+
+        .summary-item-value {
+            font-size: 1.8rem;
+            font-weight: 700;
+            color: #00D4FF;
+        }
+
+        .questions-container {
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+        }
+
+        .question-card {
+            background: rgba(255, 255, 255, 0.12);
+            backdrop-filter: blur(10px);
+            border: 2px solid rgba(255, 255, 255, 0.25);
+            border-radius: 14px;
+            padding: 1.75rem;
+            border-left: 6px solid rgba(0, 212, 255, 0.6);
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        .question-card:hover {
+            background: rgba(255, 255, 255, 0.15);
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+            border-color: rgba(255, 255, 255, 0.4);
+        }
+
+        .question-card.correct {
+            border-left-color: #4CAF50;
+        }
+
+        .question-card.incorrect {
+            border-left-color: #FF416C;
+        }
+
+        .question-number {
+            color: rgba(255, 255, 255, 0.6);
+            font-size: 0.8rem;
+            margin-bottom: 0.5rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            font-weight: 600;
+        }
+
+        .question-text {
+            font-size: 1.15rem;
+            font-weight: 600;
+            color: white;
+            margin-bottom: 1rem;
+            line-height: 1.5;
+        }
+
+        .question-type-badge {
+            display: inline-block;
+            background: rgba(127, 0, 255, 0.3);
+            color: #00D4FF;
+            padding: 0.4rem 0.9rem;
+            border-radius: 8px;
+            font-size: 0.75rem;
+            margin-bottom: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            font-weight: 600;
+            border: 1px solid rgba(0, 212, 255, 0.3);
+        }
+
+        .question-type-badge.text {
+            background: rgba(255, 152, 0, 0.2);
+            color: #FFB74D;
+            border-color: rgba(255, 152, 0, 0.3);
+        }
+
+        .question-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 1rem;
+            gap: 1rem;
+            flex-wrap: wrap;
+        }
+
+        .result-badge {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            padding: 0.6rem 1.2rem;
+            border-radius: 8px;
+            font-weight: 600;
+            font-size: 0.8rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            white-space: nowrap;
+        }
+
+        .result-badge.correct {
+            background: rgba(76, 175, 80, 0.2);
+            color: #4CAF50;
+            border: 1px solid rgba(76, 175, 80, 0.3);
+        }
+
+        .result-badge.incorrect {
+            background: rgba(255, 65, 108, 0.2);
+            color: #FF416C;
+            border: 1px solid rgba(255, 65, 108, 0.3);
+        }
+
+        .answer-section {
+            margin-top: 1.25rem;
+        }
+
+        .answer-section h4 {
+            color: rgba(255, 255, 255, 0.7);
+            font-size: 0.8rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin: 1rem 0 0.75rem 0;
+            font-weight: 600;
+        }
+
+        .answer-box {
+            background: rgba(255, 255, 255, 0.08);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            padding: 1rem;
+            border-radius: 8px;
+            margin-bottom: 0.75rem;
+            border-left: 3px solid rgba(0, 212, 255, 0.5);
+            color: rgba(255, 255, 255, 0.95);
+        }
+
+        .answer-box.correct-answer {
+            border-left-color: #4CAF50;
+            background: rgba(76, 175, 80, 0.08);
+            border-color: rgba(76, 175, 80, 0.2);
+        }
+
+        .answer-box.user-answer {
+            border-left-color: #2196F3;
+            background: rgba(33, 150, 243, 0.08);
+            border-color: rgba(33, 150, 243, 0.2);
+        }
+
+        .answer-label {
+            font-size: 0.75rem;
+            color: rgba(255, 255, 255, 0.6);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 0.5rem;
+            font-weight: 600;
+        }
+
+        .answer-text {
+            color: white;
+            line-height: 1.6;
+            word-wrap: break-word;
+            font-size: 0.95rem;
+        }
+
+        .mcq-options {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+            gap: 0.75rem;
+            margin: 0.75rem 0;
+        }
+
+        .mcq-option {
+            padding: 0.75rem;
+            background: rgba(255, 255, 255, 0.08);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 8px;
+            color: rgba(255, 255, 255, 0.8);
+            font-size: 0.9rem;
+            transition: all 0.2s ease;
+        }
+
+        .mcq-option.correct-option {
+            background: rgba(76, 175, 80, 0.15);
+            border-color: #4CAF50;
+            color: #4CAF50;
+            font-weight: 600;
+        }
+
+        .mcq-option.selected-option {
+            background: rgba(33, 150, 243, 0.15);
+            border-color: #2196F3;
+            color: #2196F3;
+        }
+
+        .mcq-option.wrong-option {
+            background: rgba(255, 65, 108, 0.15);
+            border-color: #FF416C;
+            color: #FF416C;
+        }
+
+        .similarity-score {
+            color: #2196F3;
+            font-size: 0.85rem;
+            margin-top: 0.75rem;
+            font-weight: 600;
+        }
+
+        .loading {
+            text-align: center;
+            color: rgba(255, 255, 255, 0.7);
+            padding: 3rem;
+            font-size: 1.1rem;
+        }
+
+        .error {
+            background: rgba(255, 65, 108, 0.1);
+            border: 2px solid rgba(255, 65, 108, 0.3);
+            color: #FF7A9F;
+            padding: 1.5rem;
+            border-radius: 12px;
+            text-align: center;
+        }
+
+        @media (max-width: 768px) {
+            .results-wrapper {
+                padding: 1rem;
+            }
+
+            .results-header {
+                padding: 1.5rem;
+            }
+
+            .results-header h1 {
+                font-size: 1.8rem;
+            }
+
+            .question-card {
+                padding: 1.25rem;
+            }
+
+            .question-text {
+                font-size: 1rem;
+            }
+
+            .mcq-options {
+                grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
+            }
+
+            .question-header {
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar">
+        <div class="logo">
+            <img src="images/logo.png" alt="Logo">
+        </div>
+        <ul class="nav-links">
+            <li><a href="index.html">Home</a></li>
+            <li class="dropdown">
+                <a href="#services">Services</a>
+                <ul class="dropdown-content">
+                    <li><a href="video.html">Videos</a></li>
+                    <li><a href="tests.html">Tests</a></li>
+                </ul>
+            </li>
+            <li><a href="analysis.html">Analysis</a></li>
+            <li><a href="about.html">About</a></li>
+            <li><a href="contact.html">Contact</a></li>
+            <li class="profile dropdown">
+                <a href="#profile">
+                    <img class="profile-pic" src="images/Pfp.jpeg" alt="Profile picture">
+                    <span class="profile-text">Profile</span>
+                </a>
+                <ul class="dropdown-content">
+                    <li><a href="profile.html">View Profile</a></li>
+                    <li><a href="#" onclick="logout()">Logout</a></li>
+                </ul>
+            </li>
+        </ul>
+    </nav>
+
+    <main class="main-content">
+        <div class="results-wrapper">
+            <a href="analysis.html" class="back-button">← Back to Analysis</a>
+            <div id="resultsContent">
+                <div class="loading">Loading test results...</div>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        let currentUser = null;
+
+        // === Fetch logged-in user info for navbar ===
+        fetch('/profile')
+            .then(res => {
+                if (!res.ok) throw new Error('Not logged in');
+                return res.json();
+            })
+            .then(user => {
+                currentUser = user;
+                const navName = document.querySelector('.profile-text');
+                const navPic = document.querySelector('.profile-pic');
+                if (navName) navName.textContent = user.username;
+                if (navPic) navPic.src = user.profile_pic || 'images/default-avatar.png';
+            })
+            .catch(err => {
+                console.error('Auth error:', err);
+                window.location.href = 'login.html';
+            });
+
+        // === Logout function ===
+        function logout() {
+            fetch('/logout').then(() => {
+                window.location.href = 'login.html';
+            });
+        }
+
+        // === Get test_id and user_id from URL ===
+        const urlParams = new URLSearchParams(window.location.search);
+        const testId = urlParams.get('test_id');
+        const userId = urlParams.get('user_id');
+
+        if (!testId || !userId) {
+            document.getElementById('resultsContent').innerHTML = '<div class="error">Invalid test result link. Missing test_id or user_id.</div>';
+        } else {
+            loadTestResults(userId, testId);
+        }
+
+        async function loadTestResults(userId, testId) {
+            try {
+                console.log(`Fetching detailed results for user ${userId}, test ${testId}`);
+                const response = await fetch(`/tests/detailed-results/${userId}/${testId}`);
+                
+                if (!response.ok) {
+                    const errorData = await response.json();
+                    throw new Error(errorData.error || `HTTP ${response.status}`);
+                }
+                
+                const data = await response.json();
+                console.log('Results received:', data);
+                displayResults(data);
+            } catch (error) {
+                console.error('Error loading results:', error);
+                document.getElementById('resultsContent').innerHTML = 
+                    `<div class="error">Error loading test results: ${error.message}<br/><br/><small>Make sure you have completed this test.</small></div>`;
+            }
+        }
+
+        function displayResults(data) {
+            const { testInfo, questions, userAnswers, score, totalQuestions, correctAnswers } = data;
+            
+            let html = `
+                <div class="results-header">
+                    <h1>${escapeHtml(testInfo.title)}</h1>
+                    <div class="results-summary">
+                        <div class="summary-item">
+                            <div class="summary-item-label">Your Score</div>
+                            <div class="summary-item-value">${score.toFixed(1)}%</div>
+                        </div>
+                        <div class="summary-item">
+                            <div class="summary-item-label">Correct Answers</div>
+                            <div class="summary-item-value">${correctAnswers}/${totalQuestions}</div>
+                        </div>
+                        <div class="summary-item">
+                            <div class="summary-item-label">Difficulty</div>
+                            <div class="summary-item-value">${escapeHtml(testInfo.difficulty)}</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="questions-container">
+            `;
+
+            questions.forEach((question, index) => {
+                const userAnswer = userAnswers.find(a => a.question_id === question.id);
+                const isCorrect = userAnswer && userAnswer.is_correct;
+                const cardClass = isCorrect ? 'correct' : 'incorrect';
+
+                html += `
+                    <div class="question-card ${cardClass}">
+                        <div class="question-header">
+                            <div>
+                                <div class="question-number">Question ${index + 1}</div>
+                                <span class="question-type-badge ${question.type === 'text' ? 'text' : ''}">${question.type.toUpperCase()}</span>
+                            </div>
+                            <span class="result-badge ${isCorrect ? 'correct' : 'incorrect'}">
+                                ${isCorrect ? '✓ Correct' : '✗ Incorrect'}
+                            </span>
+                        </div>
+
+                        <div class="question-text">${escapeHtml(question.question_text)}</div>
+                `;
+
+                if (question.type === 'mcq') {
+                    html += displayMCQResult(question, userAnswer);
+                } else if (question.type === 'text') {
+                    html += displayTextResult(question, userAnswer);
+                }
+
+                html += `</div>`;
+            });
+
+            html += `</div>`;
+            document.getElementById('resultsContent').innerHTML = html;
+        }
+
+        function displayMCQResult(question, userAnswer) {
+            const options = [
+                { letter: 'A', text: question.option_a },
+                { letter: 'B', text: question.option_b },
+                { letter: 'C', text: question.option_c },
+                { letter: 'D', text: question.option_d }
+            ];
+
+            let html = `
+                <div class="answer-section">
+                    <h4>Options</h4>
+                    <div class="mcq-options">
+            `;
+
+            options.forEach(opt => {
+                let optClass = '';
+                if (opt.letter === question.correct_option) {
+                    optClass = 'correct-option';
+                } else if (userAnswer && opt.letter === userAnswer.selected_option) {
+                    optClass = 'selected-option';
+                    if (opt.letter !== question.correct_option) {
+                        optClass = 'wrong-option';
+                    }
+                }
+
+                html += `<div class="mcq-option ${optClass}"><strong>${opt.letter}.</strong> ${escapeHtml(opt.text)}</div>`;
+            });
+
+            html += `</div></div>`;
+
+            html += `<div class="answer-section">`;
+            if (userAnswer) {
+                html += `
+                    <h4>Your Answer</h4>
+                    <div class="answer-box user-answer">
+                        <div class="answer-label">Selected</div>
+                        <div class="answer-text"><strong>${userAnswer.selected_option}</strong></div>
+                    </div>
+                `;
+            }
+
+            html += `
+                    <h4>Correct Answer</h4>
+                    <div class="answer-box correct-answer">
+                        <div class="answer-label">Answer</div>
+                        <div class="answer-text"><strong>${question.correct_option}</strong></div>
+                    </div>
+                    <h4>Solution</h4>
+                    <div class="answer-box">
+                        <div class="answer-text">${escapeHtml(question.correct_answer)}</div>
+                    </div>
+            </div>`;
+
+            return html;
+        }
+
+        function displayTextResult(question, userAnswer) {
+            let html = `<div class="answer-section">`;
+
+            if (userAnswer) {
+                html += `
+                    <h4>Your Answer</h4>
+                    <div class="answer-box user-answer">
+                        <div class="answer-text">${escapeHtml(userAnswer.answer_text)}</div>
+                `;
+                if (userAnswer.similarity_score !== undefined) {
+                    html += `<div class="similarity-score">Similarity Match: ${(userAnswer.similarity_score * 100).toFixed(1)}%</div>`;
+                }
+                html += `</div>`;
+            } else {
+                html += `
+                    <h4>Your Answer</h4>
+                    <div class="answer-box user-answer">
+                        <div class="answer-text"><em>No answer provided</em></div>
+                    </div>
+                `;
+            }
+
+            html += `
+                    <h4>Model Answer</h4>
+                    <div class="answer-box correct-answer">
+                        <div class="answer-text">${escapeHtml(question.correct_answer)}</div>
+                    </div>
+            </div>`;
+
+            return html;
+        }
+
+        function escapeHtml(text) {
+            if (!text) return '';
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+    </script>
+</body>
+</html>

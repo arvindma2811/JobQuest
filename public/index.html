@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+
+<html>
+    <head>
+        <title>JobQuest</title>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0"> 
+        <link rel="stylesheet" type="text/css" href="css/styles.css">
+        <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' fill='%237F00FF'/%3E%3Ctext x='50' y='65' font-size='50' text-anchor='middle' fill='white'%3E⚙%3C/text%3E%3C/svg%3E">
+        <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+        <script src="auth.js" defer></script>
+    </head>
+    
+    <script>
+  // === Fetch logged-in user info for navbar ===
+  fetch('/profile')
+    .then(res => {
+      if (!res.ok) throw new Error('Not logged in');
+      return res.json();
+    })
+    .then(user => {
+      const navName = document.querySelector('.profile-text');
+      const navPic = document.querySelector('.profile-pic');
+      if (navName) navName.textContent = user.username;
+      if (navPic) navPic.src = user.profile_pic || 'images/default-avatar.png';
+    })
+    .catch(() => {
+      window.location.href = 'login.html';
+    });
+
+  // === Logout function ===
+  function logout() {
+    fetch('/logout').then(() => {
+      window.location.href = 'login.html';
+    });
+  }
+</script>
+
+
+    <body>
+        <nav class="navbar">
+            <div class="logo">
+                <img src="images/logo.png" alt="Logo">
+            </div>
+            <ul class="nav-links">
+                <li><a href="index.html">Home</a></li>
+                <li class="dropdown">
+                    <a href="#services">Services</a>
+                    <ul class="dropdown-content">
+                        <li><a href="video.html">Videos</a></li>
+                        <li><a href="tests.html">Tests</a></li>
+                    </ul>
+                </li>
+                <li><a href="analysis.html">Analysis</a></li>
+                <li><a href="about.html">About</a></li>
+                <li><a href="contact.html">Contact</a></li>
+                <li class="profile dropdown">
+                    <a href="#profile">
+                        <img class="profile-pic" src="images/Pfp.jpeg" alt="Profile picture">
+                        <span class="profile-text">Profile</span>
+                    </a>
+                    <ul class="dropdown-content">
+                        <li><a href="profile.html">View Profile</a></li>
+                        <li><a href="#" onclick="logout()">Logout</a></li>
+                    </ul>
+                </li>
+
+
+            </ul>
+        </nav>
+
+        <main class="main-content">
+            <h1>Welcome to JobQuest</h1>
+            <p>This is a Website For Making Your Job Interviews Better!</p>
+        </main>
+
+       
+    </body>
+
+</html>
