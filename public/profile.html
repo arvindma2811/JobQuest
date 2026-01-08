@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Your Profile | JobQuest</title>
   <link rel="stylesheet" href="css/styles.css" />
+
 </head>
 <body>
 
@@ -20,7 +21,7 @@
       <li><a href="contact.html">Contact</a></li>
       <li class="dropdown profile">
         <a href="profile.html">
-          <img id="navProfilePic" class="profile-pic" src="images/default-avatar.png" alt="Profile">
+          <img id="navProfilePic" class="profile-pic" src="images/Pfp.jpeg" alt="Profile">
           <span id="navUsername" class="profile-text">User</span>
         </a>
         <ul class="dropdown-content">
@@ -36,10 +37,20 @@
     <div class="profile-container">
       <h1>Your Profile</h1>
       <div class="profile-card">
-        <img id="profile-pic" src="images/default-avatar.png" alt="Profile Picture" />
+        <img id="profile-pic" src="images/Pfp.jpeg" alt="Profile Picture" />
         <h2 id="profile-name">Loading...</h2>
-        <p><strong>Username:</strong> <span id="profile-username">Loading...</span></p>
-        <p><strong>Email:</strong> <span id="profile-email">Fetching user info...</span></p>
+
+        <div class="profile-info">
+          <div class="profile-info-item">
+            <strong>Username:</strong>
+            <span id="profile-username">Loading...</span>
+          </div>
+          <div class="profile-info-item">
+            <strong>Email:</strong>
+            <span id="profile-email">Fetching user info...</span>
+          </div>
+        </div>
+
         <button id="logoutBtn">Logout</button>
       </div>
     </div>
@@ -57,10 +68,10 @@
       document.getElementById('profile-name').textContent = user.username;
       document.getElementById('profile-username').textContent = user.username;
       document.getElementById('profile-email').textContent = user.email;
-      document.getElementById('profile-pic').src = user.profile_pic || 'images/default-avatar.png';
+      document.getElementById('profile-pic').src = user.profile_pic || 'images/Pfp.jpeg';
       // Navbar section
       document.getElementById('navUsername').textContent = user.username;
-      document.getElementById('navProfilePic').src = user.profile_pic || 'images/default-avatar.png';
+      document.getElementById('navProfilePic').src = user.profile_pic || 'images/Pfp.jpeg';
     })
     .catch(() => {
       window.location.href = 'login.html';

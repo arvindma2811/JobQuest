@@ -2,8 +2,8 @@ USE jobquest;
 
 -- ===== CREATE TESTS =====
 INSERT INTO tests (id, title, description, difficulty, time_limit) VALUES
-(1, 'Behavioral Interview - MCQ', 'Behavioral interview MCQ questions to assess soft skills and decision-making', 'medium', 30),
-(2, 'Behavioral Interview - Open-Ended', 'Behavioral interview open-ended questions about real workplace scenarios', 'medium', 45)
+(1, 'Behavioral Skills & Workplace Decision-Making Assessment', 'Behavioral interview MCQ questions to assess soft skills and decision-making', 'medium', 30),
+(2, 'Behavioral Interview: Real-Life Scenario & Reflection Assessment', 'Behavioral interview open-ended questions about real workplace scenarios', 'medium', 45)
 ON DUPLICATE KEY UPDATE 
 title = VALUES(title),
 description = VALUES(description),
@@ -49,7 +49,7 @@ INSERT INTO questions (test_id, question_text, type, correct_answer) VALUES
 
 -- ===== TEST 3: HR INTERVIEW ASSESSMENT =====
 INSERT INTO tests (id, title, description, difficulty, time_limit) VALUES
-(3, 'HR Interview Assessment', 'Comprehensive HR interview assessment covering key competencies, communication skills, and professional growth mindset based on industry best practices', 'medium', 0)
+(3, 'HR Interview Readiness & Professional Competency Assessment', 'Comprehensive HR interview assessment covering key competencies, communication skills, and professional growth mindset based on industry best practices', 'medium', 0)
 ON DUPLICATE KEY UPDATE 
 title = VALUES(title),
 description = VALUES(description),
@@ -82,7 +82,7 @@ INSERT INTO questions (test_id, question_text, type, correct_answer) VALUES
 
 -- ===== TEST 4: S.T.A.R BEHAVIORAL INTERVIEW QUESTIONS =====
 INSERT INTO tests (id, title, description, difficulty, time_limit)
-VALUES (4, 'S.T.A.R Behavioural Assessment', 'Comprehensive Assessment Based on The S.T.A.R Principle', 'medium', 0)
+VALUES (4, 'S.T.A.R. Method-Based Behavioral Interview Assessment', 'Comprehensive Assessment Based on The S.T.A.R Principle', 'medium', 0)
 ON DUPLICATE KEY UPDATE
 title = VALUES(title),
 description = VALUES(description),
@@ -173,3 +173,127 @@ INSERT INTO questions (
 (4, 'Which behaviour shows confidence in an interview?', 'mcq',
  'Clear voice and steady posture', 'Avoiding eye contact', 'Giving unclear answers', 'Constantly apologising',
  'A', 'Clear voice and steady posture');
+
+
+-- ===== TEST 5: ADVANCED BEHAVIORAL DEEP-DIVE =====
+INSERT INTO tests (id, title, description, difficulty, time_limit) VALUES
+(5, 'Advanced Behavioral Deep-Dive: Conflict Resolution & Project Impact', 'Advanced behavioral interview evaluation based on conflict, impact, and project reflections.', 'medium', 0)
+ON DUPLICATE KEY UPDATE 
+title = VALUES(title),
+description = VALUES(description),
+difficulty = VALUES(difficulty),
+time_limit = VALUES(time_limit);
+
+INSERT INTO questions 
+(test_id, question_text, type, option_a, option_b, option_c, option_d, correct_option, correct_answer) 
+VALUES
+
+-- Question 1
+(5,
+'Which dimension is recommended for a candidate to consider when choosing a conflict story, especially if they are new to behavioral interviews?',
+'mcq',
+'It should involve minimal emotional content',
+'It should involve low-stakes disagreements like code formatting',
+'The example should be one where the candidate was correct in their stance',
+'The candidate must have been only a peripheral audience member',
+'C',
+'The example should be one where the candidate was correct in their stance'),
+
+-- Question 2
+(5,
+'What percentage of a behavioral interview response should typically be spent describing the actions taken?',
+'mcq',
+'10%',
+'20%',
+'40%',
+'60%',
+'D',
+'60%'),
+
+-- Question 3
+(5,
+'What is considered a red flag in a conflict resolution story during an interview?',
+'mcq',
+'Focusing mainly on a technical achievement or business outcome',
+'Trying to understand the other person’s perspective',
+'Preserving relationships with colleagues',
+'Using objective data to resolve conflict',
+'A',
+'Focusing mainly on a technical achievement or business outcome'),
+
+-- Question 4
+(5,
+'When selecting a project to discuss in an interview, which three dimensions should candidates optimize for?',
+'mcq',
+'Recency, Team Size, and Manager Support',
+'Technical Complexity, Time-to-Market, and Learnings',
+'Impact, Scope, and Personal Contribution',
+'Budget, Ambiguity, and Cross-functional Alignment',
+'C',
+'Impact, Scope, and Personal Contribution'),
+
+-- Question 5
+(5,
+'When discussing a project failure or risk, what is the interviewer primarily assessing?',
+'mcq',
+'Ability to avoid all failure',
+'Lack of emotional response',
+'Self-awareness and ability to reflect and grow',
+'Tendency to blame external factors',
+'C',
+'Self-awareness and ability to reflect and grow'),
+
+-- Question 6
+(5,
+'When interviewers ask about a conflict with a co-worker, what are they mainly trying to assess?',
+'mcq',
+'Only technical problem-solving skills',
+'Conflict resolution, communication skills, and scope of responsibility',
+'Ability to avoid conflict entirely',
+'Knowledge of company policies',
+'B',
+'Conflict resolution, communication skills, and scope of responsibility'),
+
+-- Question 7
+(5,
+'How should a Staff or Principal Engineer handle conflicts differently from a junior engineer?',
+'mcq',
+'By avoiding conflicts completely',
+'By escalating every conflict to management',
+'By focusing on systemic or organizational solutions',
+'By resolving conflicts only within their own team',
+'C',
+'By focusing on systemic or organizational solutions'),
+
+-- Question 8
+(5,
+'When telling a long project story in an interview, what technique should be used at the beginning?',
+'mcq',
+'Start with technical details immediately',
+'Explain the final result first',
+'Provide a table of contents for the story',
+'Ask the interviewer questions before starting',
+'C',
+'Provide a table of contents for the story'),
+
+-- Question 9
+(5,
+'When disagreeing with a manager, what is the most critical condition for pushing back?',
+'mcq',
+'Being emotionally firm',
+'Proving the manager wrong publicly',
+'Remaining respectful and professional',
+'Refusing to commit to the final decision',
+'C',
+'Remaining respectful and professional'),
+
+-- Question 10
+(5,
+'To avoid appearing careless when discussing a project failure, what should be included at the start of the story?',
+'mcq',
+'Details of who caused the failure',
+'A believable hypothesis explaining the original decision',
+'Only the final negative outcome',
+'An apology before explaining the issue',
+'B',
+'A believable hypothesis explaining the original decision');

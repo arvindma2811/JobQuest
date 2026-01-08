@@ -8,8 +8,7 @@
         <link rel="stylesheet" type="text/css" href="css/styles.css">
         <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' fill='%237F00FF'/%3E%3Ctext x='50' y='65' font-size='50' text-anchor='middle' fill='white'%3E⚙%3C/text%3E%3C/svg%3E">
         <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-        <script src="auth.js" defer></script>
-    </head>
+        <script src="js/auth.js" defer></script>    </head>
     
     <script>
   // === Fetch logged-in user info for navbar ===
@@ -22,7 +21,7 @@
       const navName = document.querySelector('.profile-text');
       const navPic = document.querySelector('.profile-pic');
       if (navName) navName.textContent = user.username;
-      if (navPic) navPic.src = user.profile_pic || 'images/default-avatar.png';
+      if (navPic) navPic.src = user.profile_pic || 'images/Pfp.jpeg';
     })
     .catch(() => {
       window.location.href = 'login.html';
@@ -34,9 +33,32 @@
       window.location.href = 'login.html';
     });
   }
-</script>
 
+  async function sendMessage() {
+    const input = document.getElementById("userInput");
+    const message = input.value;
+    if (!message) return;
 
+    appendMessage("You", message);
+    input.value = "";
+
+    const res = await fetch("http://localhost:3000/api/chat", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ message })
+    });
+
+    const data = await res.json();
+    appendMessage("Bot", data.reply);
+    }
+
+    function appendMessage(sender, text) {
+        const chatBox = document.getElementById("chat-box");
+        chatBox.innerHTML += `<p><b>${sender}:</b> ${text}</p>`;
+        chatBox.scrollTop = chatBox.scrollHeight;
+    }
+
+    </script>
     <body>
         <nav class="navbar">
             <div class="logo">
@@ -70,11 +92,15 @@
         </nav>
 
         <main class="main-content">
-            <h1>Welcome to JobQuest</h1>
-            <p>This is a Website For Making Your Job Interviews Better!</p>
-        </main>
-
-       
+            <section class="hero">
+                <h1>Welcome to JobQuest</h1>
+                <p>Your ultimate interview preparation companion.
+                Prepare, practice, and succeed with our expert resources and tools.
+                </p>
+            </section>
+        <h2>Get Started with Interview Preparation Videos</h2>
+                <p><button onclick="window.location.href='video.html'" class="btn">Get Started</button></p>
+        </main>       
     </body>
 
 </html>

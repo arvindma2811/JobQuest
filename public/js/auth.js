@@ -1,6 +1,3 @@
-// =========================
-// AUTH.JS – SIMPLE FRONTEND AUTH
-// =========================
 
 function loginUser(userData) {
   // userData should already include imageData if present
@@ -24,38 +21,28 @@ function registerUser(userData) {
 }
 
 
-// Check login state
+// Check login state - only for UI updates, not authentication
 function checkAuth() {
   const user = JSON.parse(localStorage.getItem('user'));
-  // Redirect protection for protected pages
-  const protectedPages = ['profile.html', 'analysis.html']; // adjust list
-  const currentPage = location.pathname.split('/').pop();
-
-  if (!user) {
-    if (protectedPages.includes(currentPage)) {
-      window.location.href = 'login.html';
-      return;
+  // Only update UI if user exists in localStorage, don't redirect
+  if (user) {
+    // if logged in, update profile li
+    const profileLi = document.querySelector('.profile');
+    if (profileLi) {
+      const imageSrc = user.imageData && user.imageData.length ? user.imageData : 'images/Pfp.jpeg';
+      // Keep .dropdown class so hover works
+      profileLi.classList.add('dropdown');
+      profileLi.innerHTML = `
+        <a href="#profile">
+          <img class="profile-pic" src="${imageSrc}" alt="Profile picture" onerror="this.onerror=null; this.src='images/Pfp.jpeg'">
+          <span class="profile-text">${escapeHtml(user.name)}</span>
+        </a>
+        <ul class="dropdown-content">
+          <li><a href="profile.html">View Profile</a></li>
+          <li><a href="#" onclick="logout()">Logout</a></li>
+        </ul>
+      `;
     }
-    // if not logged in, you might want to show 'Login' text. But leave navbar as-is.
-    return;
-  }
-
-  // if logged in, update profile li
-  const profileLi = document.querySelector('.profile');
-  if (profileLi) {
-    const imageSrc = user.imageData && user.imageData.length ? user.imageData : 'images/Pfp.jpeg';
-    // Keep .dropdown class so hover works
-    profileLi.classList.add('dropdown');
-    profileLi.innerHTML = `
-      <a href="#profile">
-        <img class="profile-pic" src="${imageSrc}" alt="Profile picture" onerror="this.onerror=null; this.src='images/Pfp.jpeg'">
-        <span class="profile-text">${escapeHtml(user.name)}</span>
-      </a>
-      <ul class="dropdown-content">
-        <li><a href="profile.html">View Profile</a></li>
-        <li><a href="#" onclick="logout()">Logout</a></li>
-      </ul>
-    `;
   }
 }
 

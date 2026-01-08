@@ -1,15 +1,9 @@
 const express = require("express");
 const multer = require("multer");
 const path = require("path");
-const mysql = require("mysql2");
+const bcrypt = require("bcrypt");
+const db = require("./db");
 const router = express.Router();
-
-const db = mysql.createConnection({
-  host: "localhost",
-  user: "root",
-  password: "1234",
-  database: "jobquest",
-});
 
 // Configure file uploads
 const storage = multer.diskStorage({
@@ -21,7 +15,7 @@ const storage = multer.diskStorage({
 const upload = multer({ storage });
 
 // === Register ===
-router.post("/register", upload.single("profile_pic"), (req, res) => {
+router.post("/register", upload.single("profile_pic"), async (req, res) => {
   const { username, email, password } = req.body;
   const profile_pic = req.file ? `/uploads/${req.file.filename}` : null;
 
@@ -29,43 +23,55 @@ router.post("/register", upload.single("profile_pic"), (req, res) => {
     return res.send("<script>alert('Please fill all fields'); window.location='/register.html';</script>");
   }
 
-  db.query("SELECT * FROM users WHERE email = ? OR username = ?", [email, username], (err, result) => {
-    if (err) throw err;
-    if (result.length > 0) {
+  try {
+    const [existingUser] = await db.query("SELECT * FROM users WHERE email = ? OR username = ?", [email, username]);
+    if (existingUser.length > 0) {
       return res.send("<script>alert('Email or Username already registered'); window.location='/register.html';</script>");
     }
 
-    db.query(
+    const hashedPassword = await bcrypt.hash(password, 10);
+
+    await db.query(
       "INSERT INTO users (username, email, password, profile_pic) VALUES (?, ?, ?, ?)",
-      [username, email, password, profile_pic],
-      (err2) => {
-        if (err2) throw err2;
-        res.redirect("/login.html");
-      }
+      [username, email, hashedPassword, profile_pic]
     );
-  });
+
+    res.redirect("/login.html");
+  } catch (error) {
+    console.error("Registration error:", error);
+    res.send("<script>alert('Registration failed'); window.location='/register.html';</script>");
+  }
 });
 
 // === Login ===
-router.post("/login", (req, res) => {
+router.post("/login", async (req, res) => {
   const { email, password } = req.body;
 
-  db.query("SELECT * FROM users WHERE email = ? AND password = ?", [email, password], (err, result) => {
-    if (err) throw err;
+  try {
+    const [users] = await db.query("SELECT * FROM users WHERE email = ?", [email]);
 
-    if (result.length > 0) {
-      const user = result[0];
-      req.session.user = {
-        id: user.id,
-        username: user.username,
-        email: user.email,
-        profile_pic: user.profile_pic,
-      };
-      res.redirect("/index.html");
-    } else {
-      res.send("<script>alert('Invalid email or password'); window.location='/login.html';</script>");
+    if (users.length === 0) {
+      return res.send("<script>alert('Invalid email or password'); window.location='/login.html';</script>");
     }
-  });
+
+    const user = users[0];
+    const isValidPassword = await bcrypt.compare(password, user.password);
+
+    if (!isValidPassword) {
+      return res.send("<script>alert('Invalid email or password'); window.location='/login.html';</script>");
+    }
+
+    req.session.user = {
+      id: user.id,
+      username: user.username,
+      email: user.email,
+      profile_pic: user.profile_pic,
+    };
+    res.redirect("/index.html");
+  } catch (error) {
+    console.error("Login error:", error);
+    res.send("<script>alert('Login failed'); window.location='/login.html';</script>");
+  }
 });
 
 module.exports = router;
