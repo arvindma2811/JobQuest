@@ -174,16 +174,16 @@ app.post("/tests/calculate-score", async (req, res) => {
   try {
     const { user_id, test_id } = req.body;
 
-    const questionsResult = await db.query(
+    const qRes = await db.query(
       "SELECT * FROM questions WHERE test_id = $1",
       [test_id]
     );
 
-    if (questionsResult.rows.length === 0) {
+    if (qRes.rows.length === 0) {
       return res.status(400).json({ error: "No questions found" });
     }
 
-    const answersResult = await db.query(
+    const aRes = await db.query(
       `SELECT ua.*, q.correct_option, q.correct_answer, q.type
        FROM user_answers ua
        JOIN questions q ON ua.question_id = q.id
@@ -193,16 +193,10 @@ app.post("/tests/calculate-score", async (req, res) => {
 
     let correct = 0;
 
-    for (const a of answersResult.rows) {
-      if (a.type === "mcq" && a.selected_option === a.correct_option) {
-        correct++;
-      }
+    for (const a of aRes.rows) {
+      if (a.type === "mcq" && a.selected_option === a.correct_option) correct++;
 
-      if (
-        a.type === "text" &&
-        a.answer_text &&
-        a.correct_answer
-      ) {
+      if (a.type === "text" && a.answer_text && a.correct_answer) {
         const sim = stringSimilarity.compareTwoStrings(
           a.answer_text.toLowerCase().trim(),
           a.correct_answer.toLowerCase().trim()
@@ -211,8 +205,8 @@ app.post("/tests/calculate-score", async (req, res) => {
       }
     }
 
-    const totalQuestions = questionsResult.rows.length;
-    const score = (correct / totalQuestions) * 100;
+    const total = qRes.rows.length;
+    const score = (correct / total) * 100;
 
     await db.query(
       `INSERT INTO test_scores
@@ -224,7 +218,7 @@ app.post("/tests/calculate-score", async (req, res) => {
          total_questions = EXCLUDED.total_questions,
          correct_answers = EXCLUDED.correct_answers,
          completed_at = CURRENT_TIMESTAMP`,
-      [user_id, test_id, score, totalQuestions, correct]
+      [user_id, test_id, score, total, correct]
     );
 
     res.json({
@@ -232,7 +226,7 @@ app.post("/tests/calculate-score", async (req, res) => {
       score: score.toFixed(2),
       percentage: score.toFixed(2),
       correctAnswers: correct,
-      totalQuestions,
+      totalQuestions: total,
     });
   } catch (err) {
     console.error("Score calculation error:", err);
@@ -240,7 +234,26 @@ app.post("/tests/calculate-score", async (req, res) => {
   }
 });
 
-/* ---------------- STATIC & PROFILE ---------------- */
+// ANALYSIS PAGE DATA
+app.get("/tests/user-scores/:user_id", async (req, res) => {
+  try {
+    const result = await db.query(
+      `SELECT ts.*, t.title, t.description, t.difficulty
+       FROM test_scores ts
+       JOIN tests t ON ts.test_id = t.id
+       WHERE ts.user_id = $1
+       ORDER BY ts.completed_at DESC`,
+      [req.params.user_id]
+    );
+
+    res.json(result.rows);
+  } catch (err) {
+    console.error("Analysis load error:", err);
+    res.status(500).json({ error: "Failed to load tests" });
+  }
+});
+
+/* ---------------- PROFILE & LOGOUT ---------------- */
 
 app.get("/profile", (req, res) => {
   if (!req.session.user)
