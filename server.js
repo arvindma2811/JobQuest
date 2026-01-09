@@ -149,72 +149,101 @@ app.get("/tests/:test_id/questions", async (req, res) => {
 app.post("/tests/submit", async (req, res) => {
   const { user_id, question_id, answer_text, is_mcq } = req.body;
 
-  if (is_mcq) {
-    await db.query(
-      "INSERT INTO user_answers (user_id, question_id, selected_option) VALUES ($1,$2,$3)",
-      [user_id, question_id, answer_text]
-    );
-  } else {
-    await db.query(
-      "INSERT INTO user_answers (user_id, question_id, answer_text) VALUES ($1,$2,$3)",
-      [user_id, question_id, answer_text]
-    );
-  }
+  try {
+    if (is_mcq) {
+      await db.query(
+        "INSERT INTO user_answers (user_id, question_id, selected_option) VALUES ($1,$2,$3)",
+        [user_id, question_id, answer_text]
+      );
+    } else {
+      await db.query(
+        "INSERT INTO user_answers (user_id, question_id, answer_text) VALUES ($1,$2,$3)",
+        [user_id, question_id, answer_text]
+      );
+    }
 
-  res.json({ success: true });
+    res.json({ success: true });
+  } catch (err) {
+    console.error("Answer submit error:", err);
+    res.status(500).json({ error: "Failed to save answer" });
+  }
 });
 
 // CALCULATE SCORE
 app.post("/tests/calculate-score", async (req, res) => {
-  const { user_id, test_id } = req.body;
+  try {
+    const { user_id, test_id } = req.body;
 
-  const questions = await db.query(
-    "SELECT * FROM questions WHERE test_id = $1",
-    [test_id]
-  );
+    const questionsResult = await db.query(
+      "SELECT * FROM questions WHERE test_id = $1",
+      [test_id]
+    );
 
-  const answers = await db.query(
-    `SELECT ua.*, q.correct_option, q.correct_answer, q.type
-     FROM user_answers ua
-     JOIN questions q ON ua.question_id = q.id
-     WHERE ua.user_id = $1 AND q.test_id = $2`,
-    [user_id, test_id]
-  );
-
-  let correct = 0;
-
-  for (const a of answers.rows) {
-    if (a.type === "mcq" && a.selected_option === a.correct_option) correct++;
-    if (a.type === "text" && a.answer_text) {
-      const sim = stringSimilarity.compareTwoStrings(
-        a.answer_text.toLowerCase(),
-        a.correct_answer.toLowerCase()
-      );
-      if (sim >= 0.5) correct++;
+    if (questionsResult.rows.length === 0) {
+      return res.status(400).json({ error: "No questions found" });
     }
+
+    const answersResult = await db.query(
+      `SELECT ua.*, q.correct_option, q.correct_answer, q.type
+       FROM user_answers ua
+       JOIN questions q ON ua.question_id = q.id
+       WHERE ua.user_id = $1 AND q.test_id = $2`,
+      [user_id, test_id]
+    );
+
+    let correct = 0;
+
+    for (const a of answersResult.rows) {
+      if (a.type === "mcq" && a.selected_option === a.correct_option) {
+        correct++;
+      }
+
+      if (
+        a.type === "text" &&
+        a.answer_text &&
+        a.correct_answer
+      ) {
+        const sim = stringSimilarity.compareTwoStrings(
+          a.answer_text.toLowerCase().trim(),
+          a.correct_answer.toLowerCase().trim()
+        );
+        if (sim >= 0.5) correct++;
+      }
+    }
+
+    const totalQuestions = questionsResult.rows.length;
+    const score = (correct / totalQuestions) * 100;
+
+    await db.query(
+      `INSERT INTO test_scores
+       (user_id, test_id, score, total_questions, correct_answers, completed_at)
+       VALUES ($1,$2,$3,$4,$5,CURRENT_TIMESTAMP)
+       ON CONFLICT (user_id, test_id)
+       DO UPDATE SET
+         score = EXCLUDED.score,
+         total_questions = EXCLUDED.total_questions,
+         correct_answers = EXCLUDED.correct_answers,
+         completed_at = CURRENT_TIMESTAMP`,
+      [user_id, test_id, score, totalQuestions, correct]
+    );
+
+    res.json({
+      success: true,
+      score: score.toFixed(2),
+      correctAnswers: correct,
+      totalQuestions,
+    });
+  } catch (err) {
+    console.error("Score calculation error:", err);
+    res.status(500).json({ error: "Score calculation failed" });
   }
-
-  const score = (correct / questions.rows.length) * 100;
-
-  await db.query(
-    `INSERT INTO test_scores (user_id, test_id, score, total_questions, correct_answers, completed_at)
-     VALUES ($1,$2,$3,$4,$5,CURRENT_TIMESTAMP)
-     ON CONFLICT (user_id, test_id)
-     DO UPDATE SET
-       score = EXCLUDED.score,
-       total_questions = EXCLUDED.total_questions,
-       correct_answers = EXCLUDED.correct_answers,
-       completed_at = CURRENT_TIMESTAMP`,
-    [user_id, test_id, score, questions.rows.length, correct]
-  );
-
-  res.json({ score: score.toFixed(2) });
 });
 
 /* ---------------- STATIC & PROFILE ---------------- */
 
 app.get("/profile", (req, res) => {
-  if (!req.session.user) return res.status(401).json({ error: "Not logged in" });
+  if (!req.session.user)
+    return res.status(401).json({ error: "Not logged in" });
   res.json(req.session.user);
 });
 
