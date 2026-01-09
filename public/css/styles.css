@@ -520,7 +520,7 @@ body {
   padding: 140px 20px 40px;
   display: flex;
   justify-content: center;
-  align-items: flex-start;
+  align-items: center;
   min-height: calc(100vh - 110px);
   background: linear-gradient(135deg, rgba(255, 65, 108, 0.1), rgba(127, 0, 255, 0.1));
 }
