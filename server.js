@@ -230,6 +230,7 @@ app.post("/tests/calculate-score", async (req, res) => {
     res.json({
       success: true,
       score: score.toFixed(2),
+      percentage: score.toFixed(2),
       correctAnswers: correct,
       totalQuestions,
     });
