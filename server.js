@@ -293,8 +293,8 @@ app.get('/tests/detailed-results/:user_id/:test_id', async (req, res) => {
     if (testRes.rows.length === 0) return res.status(404).json({ error: 'Test not found' });
     const testInfo = testRes.rows[0];
 
-    // load questions for the test
-    const qRes = await db.query('SELECT id, question_text, type, option_a, option_b, option_c, option_d FROM questions WHERE test_id = $1 ORDER BY id', [test_id]);
+    // load questions for the test (include correct_answer and correct_option)
+    const qRes = await db.query('SELECT id, question_text, type, option_a, option_b, option_c, option_d, correct_option, correct_answer FROM questions WHERE test_id = $1 ORDER BY id', [test_id]);
     const questions = qRes.rows;
 
     // load user's answers
