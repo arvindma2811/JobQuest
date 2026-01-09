@@ -468,11 +468,11 @@
                         <div class="question-text">${escapeHtml(question.question_text)}</div>
                 `;
 
-                if (question.type === 'mcq') {
-                    html += displayMCQResult(question, userAnswer);
-                } else if (question.type === 'text') {
-                    html += displayTextResult(question, userAnswer);
-                }
+                    if (question.type === 'mcq') {
+                        html += displayMCQResult(question, userAnswer);
+                    } else if (question.type === 'text') {
+                        html += displayTextResult(question, userAnswer);
+                    }
 
                 html += `</div>`;
             });
@@ -496,21 +496,14 @@
             `;
 
             options.forEach(opt => {
-                let optClass = '';
-                if (opt.letter === question.correct_option) {
-                    optClass = 'correct-option';
-                } else if (userAnswer && opt.letter === userAnswer.selected_option) {
-                    optClass = 'selected-option';
-                    if (opt.letter !== question.correct_option) {
-                        optClass = 'wrong-option';
-                    }
-                }
-
+                // Only mark user's selected option; do NOT reveal which option is correct
+                const optClass = (userAnswer && opt.letter === userAnswer.selected_option) ? 'selected-option' : '';
                 html += `<div class="mcq-option ${optClass}"><strong>${opt.letter}.</strong> ${escapeHtml(opt.text)}</div>`;
             });
 
             html += `</div></div>`;
 
+            // Show only user's selected option summary; keep correct answer hidden
             html += `<div class="answer-section">`;
             if (userAnswer) {
                 html += `
@@ -520,19 +513,19 @@
                         <div class="answer-text"><strong>${userAnswer.selected_option}</strong></div>
                     </div>
                 `;
+            } else {
+                html += `
+                    <h4>Your Answer</h4>
+                    <div class="answer-box user-answer"><div class="answer-text"><em>No answer provided</em></div></div>
+                `;
             }
 
-            html += `
-                    <h4>Correct Answer</h4>
-                    <div class="answer-box correct-answer">
-                        <div class="answer-label">Answer</div>
-                        <div class="answer-text"><strong>${question.correct_option}</strong></div>
-                    </div>
-                    <h4>Solution</h4>
-                    <div class="answer-box">
-                        <div class="answer-text">${escapeHtml(question.correct_answer)}</div>
-                    </div>
-            </div>`;
+            html += `<div class="answer-box" style="background: rgba(255,255,255,0.03); border-color: rgba(255,255,255,0.06);">
+                        <div class="answer-label">Solution</div>
+                        <div class="answer-text"><em>Solution is hidden in analysis view.</em></div>
+                    </div>`;
+
+            html += `</div>`;
 
             return html;
         }
@@ -559,10 +552,11 @@
                 `;
             }
 
+            // Do NOT reveal model/correct answer in analysis view; show locked message instead
             html += `
-                    <h4>Model Answer</h4>
-                    <div class="answer-box correct-answer">
-                        <div class="answer-text">${escapeHtml(question.correct_answer)}</div>
+                    <div class="answer-box" style="background: rgba(255,255,255,0.03); border-color: rgba(255,255,255,0.06);">
+                        <div class="answer-label">Model Answer</div>
+                        <div class="answer-text"><em>Model answer is hidden in analysis view.</em></div>
                     </div>
             </div>`;
 

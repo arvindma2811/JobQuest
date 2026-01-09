@@ -265,6 +265,105 @@ app.get("/logout", (req, res) => {
   req.session.destroy(() => res.redirect("/login.html"));
 });
 
+// Check if a test is completed by a user
+app.get('/tests/check-completion/:user_id/:test_id', async (req, res) => {
+  try {
+    const { user_id, test_id } = req.params;
+    const result = await db.query(
+      'SELECT score FROM test_scores WHERE user_id = $1 AND test_id = $2',
+      [user_id, test_id]
+    );
+
+    if (result.rows.length === 0) return res.json({ completed: false, score: null });
+
+    return res.json({ completed: true, score: result.rows[0].score });
+  } catch (err) {
+    console.error('Check completion error:', err);
+    res.status(500).json({ error: 'Failed to check completion' });
+  }
+});
+
+// Detailed results for a user's test attempt (no raw solutions returned)
+app.get('/tests/detailed-results/:user_id/:test_id', async (req, res) => {
+  try {
+    const { user_id, test_id } = req.params;
+
+    // load test meta
+    const testRes = await db.query('SELECT id, title, description, difficulty FROM tests WHERE id = $1', [test_id]);
+    if (testRes.rows.length === 0) return res.status(404).json({ error: 'Test not found' });
+    const testInfo = testRes.rows[0];
+
+    // load questions for the test
+    const qRes = await db.query('SELECT id, question_text, type, option_a, option_b, option_c, option_d FROM questions WHERE test_id = $1 ORDER BY id', [test_id]);
+    const questions = qRes.rows;
+
+    // load user's answers
+    const aRes = await db.query(
+      'SELECT * FROM user_answers WHERE user_id = $1 AND question_id IN (SELECT id FROM questions WHERE test_id = $2)',
+      [user_id, test_id]
+    );
+    const userAnswersRaw = aRes.rows;
+
+    // load score record if exists
+    const scoreRes = await db.query('SELECT score, total_questions, correct_answers, completed_at FROM test_scores WHERE user_id = $1 AND test_id = $2', [user_id, test_id]);
+    const scoreRecord = scoreRes.rows[0] || null;
+
+    // assemble userAnswers mapping and calculate correctness where possible
+    const userAnswers = userAnswersRaw.map(a => ({ ...a }));
+
+    // For text answers, compute similarity if the question has a correct_answer stored in DB
+    // We intentionally do NOT return the stored correct answers or solutions here.
+    for (const ua of userAnswers) {
+      // find question to get type and correct fields if needed
+      const q = questions.find(qi => qi.id === ua.question_id);
+      if (!q) continue;
+
+      ua.question_type = q.type;
+
+      if (q.type === 'text' && ua.answer_text && ua.answer_text.trim() !== '') {
+        // If questions table includes a correct_answer column, we can compute similarity without returning the correct_answer
+        try {
+          const caRes = await db.query('SELECT correct_answer FROM questions WHERE id = $1', [ua.question_id]);
+          const correct = caRes.rows[0] && caRes.rows[0].correct_answer ? caRes.rows[0].correct_answer : null;
+          if (correct) {
+            const sim = stringSimilarity.compareTwoStrings(ua.answer_text.toLowerCase().trim(), correct.toLowerCase().trim());
+            ua.similarity_score = sim; // expose similarity so client can show match percentage
+            ua.is_correct = sim >= 0.5;
+          } else {
+            ua.similarity_score = null;
+            ua.is_correct = null;
+          }
+        } catch (e) {
+          ua.similarity_score = null;
+          ua.is_correct = null;
+        }
+      } else if (q.type === 'mcq') {
+        // For MCQ, compute correctness by comparing to stored correct_option without returning it
+        try {
+          const coRes = await db.query('SELECT correct_option FROM questions WHERE id = $1', [ua.question_id]);
+          const correctOpt = coRes.rows[0] && coRes.rows[0].correct_option ? coRes.rows[0].correct_option : null;
+          if (correctOpt) ua.is_correct = ua.selected_option === correctOpt;
+          else ua.is_correct = null;
+        } catch (e) {
+          ua.is_correct = null;
+        }
+      }
+    }
+
+    // return only what's needed by the front-end: test meta, questions (without answers/solutions), user's answers and score summary
+    res.json({
+      testInfo,
+      questions,
+      userAnswers,
+      score: scoreRecord ? parseFloat(scoreRecord.score) : null,
+      totalQuestions: scoreRecord ? scoreRecord.total_questions : questions.length,
+      correctAnswers: scoreRecord ? scoreRecord.correct_answers : userAnswers.filter(a => a.is_correct).length
+    });
+  } catch (err) {
+    console.error('Detailed results error:', err);
+    res.status(500).json({ error: 'Failed to load detailed results' });
+  }
+});
 /* ---------------- START SERVER ---------------- */
 
 app.listen(PORT, () =>
