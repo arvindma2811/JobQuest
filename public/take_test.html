@@ -137,9 +137,12 @@ function renderQuestions() {
       `;
     }
     else if (q.type === "text") {
-      html += `<textarea class="text-answer" id="q${q.id}" placeholder="Write your answer here..."></textarea>`;
+    html += `
+    <textarea class="text-answer" id="q${q.id}" placeholder="Write your answer here..."></textarea>
+    <button type="button" class="voice-btn" data-qid="${q.id}">🎤 Speak</button>`;
     }
 
+  
     html += `</div></div>`;
   });
 
@@ -280,5 +283,45 @@ async function calculateTestScore() {
 </script>
 
   </main>
+
+<script>
+/* ==================== VOICE INPUT (SAFE ADDITION) ==================== */
+
+const SpeechRecognition =
+  window.SpeechRecognition || window.webkitSpeechRecognition;
+
+if (SpeechRecognition) {
+  const recognition = new SpeechRecognition();
+  recognition.lang = "en-US";
+  recognition.interimResults = false;
+
+  let activeQuestionId = null;
+
+  // Delegate click handling (important because buttons are dynamic)
+  document.addEventListener("click", (e) => {
+    if (e.target.classList.contains("voice-btn")) {
+      activeQuestionId = e.target.getAttribute("data-qid");
+      recognition.start();
+    }
+  });
+
+  recognition.onresult = (event) => {
+    const spokenText = event.results[0][0].transcript;
+    if (activeQuestionId) {
+      const textarea = document.getElementById(`q${activeQuestionId}`);
+      if (textarea) textarea.value = spokenText;
+    }
+  };
+
+  recognition.onerror = (err) => {
+    console.error("Voice input error:", err);
+    alert("Voice recognition failed. Please try again.");
+  };
+} else {
+  console.warn("Speech Recognition not supported");
+}
+</script>
+
+
 </body>
 </html>
